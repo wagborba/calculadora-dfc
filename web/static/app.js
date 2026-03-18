@@ -125,10 +125,16 @@ function startEvaluation() {
     });
   });
 
-  $('intro-section').hidden = true;
-  $('eval-section').hidden  = false;
-
+  $('eval-section').hidden = false;
   renderDimension(0);
+
+  // Scroll suave até a segunda dobra
+  const segundaDobra = document.getElementById('eval-section');
+  if (segundaDobra) {
+    requestAnimationFrame(() => {
+      segundaDobra.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 }
 
 // -----------------------------------------------------------------------
@@ -312,8 +318,8 @@ function prevStep() {
     renderDimension(state.currentDimIndex - 1);
   } else {
     // Back to intro
-    $('eval-section').hidden  = true;
-    $('intro-section').hidden = false;
+    $('eval-section').hidden = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
