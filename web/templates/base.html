@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DFC Framework — Calculadora</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <header class="header">
+    <a href="/" class="logo-link">
+      <span class="logo">⚡ DFC Framework</span>
+      <span class="logo-sub">Digital Friction Coefficient</span>
+    </a>
+    <nav class="nav">
+      <a href="/"
+         class="nav-link{% if request.path == '/' %} active{% endif %}">
+        Avaliação
+      </a>
+      <a href="/compare"
+         class="nav-link{% if request.path == '/compare' %} active{% endif %}">
+        Comparar
+      </a>
+    </nav>
+  </header>
+
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>Digital Friction Coefficient Framework v1.0 — By Wagner Borba</p>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
