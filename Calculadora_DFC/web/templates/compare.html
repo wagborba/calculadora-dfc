@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="compare-page">
+
+  <div class="page-header">
+    <h1 class="page-title">Comparar Avaliações</h1>
+    <p class="page-subtitle">
+      Carregue dois arquivos JSON exportados pelo DFC Framework para
+      visualizar a evolução do coeficiente de fricção.
+    </p>
+  </div>
+
+  <div class="compare-grid">
+
+    <div class="upload-zone" id="zone-a" data-side="a">
+      <div class="upload-icon">📄</div>
+      <div class="upload-label">Avaliação A</div>
+      <div class="upload-hint">Arraste o arquivo JSON aqui ou clique para selecionar</div>
+      <input type="file" id="file-a" accept=".json" class="file-input">
+      <div class="upload-filename" id="filename-a">Nenhum arquivo selecionado</div>
+    </div>
+
+    <div class="upload-zone" id="zone-b" data-side="b">
+      <div class="upload-icon">📄</div>
+      <div class="upload-label">Avaliação B</div>
+      <div class="upload-hint">Arraste o arquivo JSON aqui ou clique para selecionar</div>
+      <input type="file" id="file-b" accept=".json" class="file-input">
+      <div class="upload-filename" id="filename-b">Nenhum arquivo selecionado</div>
+    </div>
+
+  </div>
+
+  <div class="compare-actions">
+    <button id="btn-compare" class="btn-primary btn-large" disabled>
+      Comparar Avaliações
+    </button>
+    <div id="compare-error" class="field-error" hidden></div>
+  </div>
+
+  <div id="compare-results"></div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  'use strict';
+
+  // -----------------------------------------------------------------------
+  // State
+  // -----------------------------------------------------------------------
+  const state = { fileA: null, fileB: null };
+
+  // -----------------------------------------------------------------------
+  // DOM refs
+  // -----------------------------------------------------------------------
+  const fileInputA   = document.getElementById('file-a');
+  const fileInputB   = document.getElementById('file-b');
+  const filenameA    = document.getElementById('filename-a');
+  const filenameB    = document.getElementById('filename-b');
+  const zoneA        = document.getElementById('zone-a');
+  const zoneB        = document.getElementById('zone-b');
+  const btnCompare   = document.getElementById('btn-compare');
+  const resultsEl    = document.getElementById('compare-results');
+  const errorEl      = document.getElementById('compare-error');
+
+  // -----------------------------------------------------------------------
+  // Helpers
+  // -----------------------------------------------------------------------
+  function arrowColor(arrow) {
+    if (arrow === '↑') return '#EF4444';
+    if (arrow === '↓') return '#10B981';
+    return '#94A3B8';
+  }
+
+  function cfColor(value) {
+    if (value < 0.2) return '#10B981';
+    if (value < 0.4) return '#84CC16';
+    if (value < 0.6) return '#F59E0B';
+    if (value < 0.8) return '#F97316';
+    return '#EF4444';
+  }
+
+  function fmt(val) {
+    if (val === null || val === undefined) return '<span class="skip-badge">SKIP</span>';
+    return val.toFixed(2);
+  }
+
+  function fmtDelta(val) {
+    if (val === null || val === undefined) return '—';
+    const sign = val > 0 ? '+' : '';
+    return sign + val.toFixed(2);
+  }
+
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.hidden = false;
+  }
+
+  function clearError() {
+    errorEl.textContent = '';
+    errorEl.hidden = true;
+  }
+
+  function updateBtn() {
+    btnCompare.disabled = !(state.fileA && state.fileB);
+  }
+
+  // -----------------------------------------------------------------------
+  // File picking
+  // -----------------------------------------------------------------------
+  function handleFile(side, file) {
+    if (!file) return;
+    if (side === 'a') {
+      state.fileA = file;
+      filenameA.textContent = file.name;
+      zoneA.classList.add('has-file');
+    } else {
+      state.fileB = file;
+      filenameB.textContent = file.name;
+      zoneB.classList.add('has-file');
+    }
+    updateBtn();
+    resultsEl.innerHTML = '';
+    clearError();
+  }
+
+  fileInputA.addEventListener('change', () => handleFile('a', fileInputA.files[0]));
+  fileInputB.addEventListener('change', () => handleFile('b', fileInputB.files[0]));
+
+  // Click anywhere on zone opens file picker
+  zoneA.addEventListener('click', (e) => { if (e.target !== fileInputA) fileInputA.click(); });
+  zoneB.addEventListener('click', (e) => { if (e.target !== fileInputB) fileInputB.click(); });
+
+  // Drag-and-drop
+  [
+    { zone: zoneA, side: 'a' },
+    { zone: zoneB, side: 'b' },
+  ].forEach(({ zone, side }) => {
+    zone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      zone.classList.add('drag-over');
+    });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(side, file);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Compare
+  // -----------------------------------------------------------------------
+  btnCompare.addEventListener('click', async () => {
+    clearError();
+    resultsEl.innerHTML = '';
+    btnCompare.textContent = 'Comparando…';
+    btnCompare.disabled = true;
+
+    const formData = new FormData();
+    formData.append('file_a', state.fileA);
+    formData.append('file_b', state.fileB);
+
+    try {
+      const res = await fetch('/api/compare', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || 'Erro ao processar a comparação.');
+        return;
+      }
+
+      renderComparison(data);
+    } catch (err) {
+      showError('Não foi possível conectar ao servidor. Verifique se o app está em execução.');
+    } finally {
+      btnCompare.textContent = 'Comparar Avaliações';
+      btnCompare.disabled = false;
+    }
+  });
+
+  // -----------------------------------------------------------------------
+  // Render
+  // -----------------------------------------------------------------------
+  function renderComparison(data) {
+    const { a, b, cf_delta, cf_arrow, dimensions } = data;
+
+    const cfArrowColor = arrowColor(cf_arrow);
+    const cfAColor     = cfColor(a.cf);
+    const cfBColor     = cfColor(b.cf);
+
+    let html = `
+      <div class="compare-result-card">
+
+        <div class="compare-header-grid">
+          <div class="compare-product">
+            <div class="compare-side-label">Avaliação A</div>
+            <div class="compare-product-name">${escHtml(a.product_name)}</div>
+            <div class="compare-date">${a.evaluated_at.slice(0, 10)}</div>
+            <div class="compare-cf" style="color:${cfAColor}">${a.cf.toFixed(2)}</div>
+            <div class="compare-classification">${escHtml(a.classification)}</div>
+          </div>
+
+          <div class="compare-delta-col">
+            <div class="compare-delta-label">Delta CF</div>
+            <div class="compare-delta-value" style="color:${cfArrowColor}">
+              ${cf_delta > 0 ? '+' : ''}${cf_delta.toFixed(2)}
+            </div>
+            <div class="compare-delta-arrow" style="color:${cfArrowColor}">${cf_arrow}</div>
+          </div>
+
+          <div class="compare-product">
+            <div class="compare-side-label">Avaliação B</div>
+            <div class="compare-product-name">${escHtml(b.product_name)}</div>
+            <div class="compare-date">${b.evaluated_at.slice(0, 10)}</div>
+            <div class="compare-cf" style="color:${cfBColor}">${b.cf.toFixed(2)}</div>
+            <div class="compare-classification">${escHtml(b.classification)}</div>
+          </div>
+        </div>
+
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Dimensão</th>
+              <th class="num-col">Score A</th>
+              <th class="num-col">Score B</th>
+              <th class="num-col">Δ</th>
+              <th class="num-col">Tendência</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${dimensions.map(row => {
+              const ar = row.arrow;
+              const arColor = arrowColor(ar);
+              return `<tr>
+                <td>${escHtml(row.name)}</td>
+                <td class="num-col">${fmt(row.score_a)}</td>
+                <td class="num-col">${fmt(row.score_b)}</td>
+                <td class="num-col">${fmtDelta(row.delta)}</td>
+                <td class="num-col arrow-cell" style="color:${arColor};font-size:1.2rem">${ar}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+
+        <div class="compare-legend">
+          <span style="color:#EF4444">↑</span> fricção aumentou &nbsp;
+          <span style="color:#10B981">↓</span> fricção diminuiu &nbsp;
+          <span style="color:#94A3B8">→</span> estável
+        </div>
+
+      </div>
+    `;
+
+    resultsEl.innerHTML = html;
+  }
+
+  function escHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+}());
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="app">
+
+  <!-- ===== INTRO ===== -->
+  <section id="intro-section">
+    <div class="hero">
+      <div class="hero-badge">DFC Framework v1.0</div>
+      <h1 class="hero-title">Calculadora DFC</h1>
+      <p class="hero-subtitle">
+        Meça o coeficiente de fricção digital do seu produto e identifique
+        os pontos de atrito na experiência do usuário.
+      </p>
+      <div class="hero-form">
+        <label for="product-name" class="field-label">Nome do produto</label>
+        <input
+          type="text"
+          id="product-name"
+          placeholder="Ex: App de pagamentos, Portal de RH…"
+          autocomplete="off"
+          maxlength="120"
+        >
+        <button id="btn-start" class="btn-primary btn-large">
+          Iniciar Avaliação →
+        </button>
+      </div>
+      <div id="intro-error" class="field-error" hidden></div>
+    </div>
+  </section>
+
+  <!-- ===== EVALUATION ===== -->
+  <section id="eval-section" hidden>
+    <div class="eval-wrap">
+      <div id="progress-bar-wrap">
+        <div id="progress-bar"></div>
+      </div>
+      <div id="step-label" class="step-label"></div>
+      <div id="step-container"></div>
+      <div id="nav-wrap">
+        <button id="btn-prev" class="btn-secondary">← Voltar</button>
+        <span id="step-counter" class="step-counter"></span>
+        <button id="btn-next" class="btn-primary">Próximo →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== RESULTS ===== -->
+  <section id="results-section" hidden>
+    <div id="results-content"></div>
+  </section>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.DIMENSIONS = {{ dimensions_json|safe }};
+</script>
+<script src="/static/app.js"></script>
+{% endblock %}

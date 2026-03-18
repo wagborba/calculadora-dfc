@@ -1,0 +1,69 @@
+======================================================
+RELATÓRIO — DIGITAL FRICTION COEFFICIENT (DFC)
+======================================================
+Produto : App Teste DFC
+Data    : 18/03/2026 14:22
+
+CF Final       : 0.51
+Classificação  : Fricção moderada
+
+  [█████████████████████░░░░░░░░░░░░░░░░░░░] 51%
+
+------------------------------------------------------
+BREAKDOWN POR DIMENSÃO
+------------------------------------------------------
+  Desempenho                         0.50  (peso 20%)
+    Parâmetros avaliados: 4
+  Fluxos & Navegação                 0.40  (peso 22%)
+    Parâmetros avaliados: 4
+  Feedback & Comunicação             0.60  (peso 18%)
+    Parâmetros avaliados: 4
+  Esforço de Entrada                 0.60  (peso 18%)
+    Parâmetros avaliados: 4
+  Confiança & Transparência          0.67  (peso 12%)
+    Parâmetros avaliados: 3
+  Acessibilidade & Adaptação         0.30  (peso 10%)
+    Parâmetros avaliados: 4
+
+------------------------------------------------------
+NOTAS POR PARÂMETRO
+------------------------------------------------------
+
+[Desempenho]
+  load_time                      2/5
+  slow_connection                3/5
+  bugs_crashes                   3/5
+  stability                      2/5
+
+[Fluxos & Navegação]
+  steps_per_task                 2/5
+  wayfinding                     2/5
+  visual_hierarchy               3/5
+  dead_ends                      1/5
+
+[Feedback & Comunicação]
+  confirmation_error_msgs        2/5
+  microinteractions              3/5
+  error_recovery                 4/5
+  progress_indicators            3/5
+
+[Esforço de Entrada]
+  form_efficiency                2/5
+  autocomplete                   4/5
+  realtime_validation            3/5
+  input_tolerance                3/5
+
+[Confiança & Transparência]
+  onboarding                     4/5
+  permissions                    2/5
+  privacy_clarity                4/5
+
+[Acessibilidade & Adaptação]
+  contrast_readability           1/5
+  touch_targets                  2/5
+  responsiveness                 1/5
+  assistive_tech                 2/5
+
+======================================================
+Gerado por DFC Framework v1.0
+======================================================

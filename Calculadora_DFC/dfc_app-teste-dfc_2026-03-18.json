@@ -1,0 +1,85 @@
+{
+  "product_name": "App Teste DFC",
+  "evaluated_at": "2026-03-18T14:22:14.710395",
+  "cf": 0.514,
+  "classification": "Fricção moderada",
+  "dimensions": [
+    {
+      "id": "performance",
+      "name": "Desempenho",
+      "weight": 0.2,
+      "skipped": false,
+      "score_normalized": 0.5,
+      "scores": {
+        "load_time": 2,
+        "slow_connection": 3,
+        "bugs_crashes": 3,
+        "stability": 2
+      }
+    },
+    {
+      "id": "flows_navigation",
+      "name": "Fluxos & Navegação",
+      "weight": 0.22,
+      "skipped": false,
+      "score_normalized": 0.4,
+      "scores": {
+        "steps_per_task": 2,
+        "wayfinding": 2,
+        "visual_hierarchy": 3,
+        "dead_ends": 1
+      }
+    },
+    {
+      "id": "feedback_communication",
+      "name": "Feedback & Comunicação",
+      "weight": 0.18,
+      "skipped": false,
+      "score_normalized": 0.6,
+      "scores": {
+        "confirmation_error_msgs": 2,
+        "microinteractions": 3,
+        "error_recovery": 4,
+        "progress_indicators": 3
+      }
+    },
+    {
+      "id": "input_effort",
+      "name": "Esforço de Entrada",
+      "weight": 0.18,
+      "skipped": false,
+      "score_normalized": 0.6,
+      "scores": {
+        "form_efficiency": 2,
+        "autocomplete": 4,
+        "realtime_validation": 3,
+        "input_tolerance": 3
+      }
+    },
+    {
+      "id": "trust_transparency",
+      "name": "Confiança & Transparência",
+      "weight": 0.12,
+      "skipped": false,
+      "score_normalized": 0.6667,
+      "scores": {
+        "onboarding": 4,
+        "permissions": 2,
+        "privacy_clarity": 4
+      }
+    },
+    {
+      "id": "accessibility",
+      "name": "Acessibilidade & Adaptação",
+      "weight": 0.1,
+      "skipped": false,
+      "score_normalized": 0.3,
+      "scores": {
+        "contrast_readability": 1,
+        "touch_targets": 2,
+        "responsiveness": 1,
+        "assistive_tech": 2
+      }
+    }
+  ]
+}
