@@ -34,5 +34,14 @@
   </footer>
 
   {% block scripts %}{% endblock %}
+
+  <!-- Amplitude Analytics + Session Replay -->
+  <script type="module">
+    import * as amplitude from 'https://cdn.jsdelivr.net/npm/@amplitude/unified/+esm';
+    amplitude.initAll('527877dc0ca71650e0d9ec15de6d4bcf', {
+      analytics: { autocapture: true },
+      sessionReplay: { sampleRate: 1 }
+    });
+  </script>
 </body>
 </html>
