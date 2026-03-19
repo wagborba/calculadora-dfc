@@ -44,6 +44,93 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+  .compare-insights {
+    margin-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1.5rem;
+  }
+  .insights-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .insights-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 1.1rem;
+    background: #16A34A;
+    border-radius: 2px;
+  }
+  .insight-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 1rem 1.2rem;
+    border-radius: 10px;
+    border-left: 4px solid;
+    margin-bottom: 1.25rem;
+  }
+  .insight-summary.insight-good  { background: #f0fdf4; border-color: #10B981; }
+  .insight-summary.insight-bad   { background: #fff5f5; border-color: #EF4444; }
+  .insight-summary.insight-neutral { background: #f8fafc; border-color: #94A3B8; }
+  .insight-summary-icon {
+    font-size: 1.25rem;
+    line-height: 1.4;
+    flex-shrink: 0;
+  }
+  .insight-summary-headline {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.3rem;
+    font-size: 0.95rem;
+  }
+  .insight-summary-body {
+    color: #475569;
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+  .insights-dim-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .insight-dim-row {
+    border-radius: 8px;
+    border-left: 3px solid;
+    padding: 0.85rem 1.1rem;
+  }
+  .insight-dim-row.insight-bad  { background: #fff5f5; border-color: #EF4444; }
+  .insight-dim-row.insight-good { background: #f0fdf4; border-color: #10B981; }
+  .insight-dim-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.45rem;
+  }
+  .insight-dim-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.9rem;
+  }
+  .insight-dim-delta {
+    font-weight: 700;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .insight-dim-why,
+  .insight-dim-action {
+    color: #475569;
+    font-size: 0.84rem;
+    line-height: 1.55;
+    margin: 0.2rem 0 0;
+  }
+</style>
 <script>
 (function () {
   'use strict';
@@ -52,6 +139,42 @@
   // State
   // -----------------------------------------------------------------------
   const state = { fileA: null, fileB: null };
+
+  // -----------------------------------------------------------------------
+  // Dimension insight context (why scores change & what to do)
+  // -----------------------------------------------------------------------
+  const DIM_CONTEXT = {
+    performance: {
+      why_up:   'Possíveis regressões no tempo de carregamento, aumento na frequência de bugs ou degradação de estabilidade introduzidos desde a última avaliação.',
+      why_down: 'Otimizações de carregamento, correção de erros críticos ou melhorias de estabilidade reduziram a fricção de desempenho percebida pelo usuário.',
+      action:   'Audite métricas LCP/FCP/TTI com Lighthouse, investigue crashes recentes, teste em conexões lentas (3G/Edge) e perfile o uso contínuo do app.',
+    },
+    flows_navigation: {
+      why_up:   'O fluxo de navegação pode ter ficado mais longo ou menos intuitivo — possíveis mudanças na arquitetura de informação ou adição de etapas desnecessárias.',
+      why_down: 'Redução de passos em tarefas críticas, melhoria do wayfinding ou da hierarquia visual simplificaram a navegação e reduziram o esforço cognitivo.',
+      action:   'Mapeie os fluxos principais com análise de cliques/sessões, elimine etapas redundantes, revise a hierarquia visual e o significado dos ícones.',
+    },
+    feedback_communication: {
+      why_up:   'Mensagens de confirmação, erro ou indicadores de progresso podem estar ausentes, genéricos ou pouco claros, deixando o usuário sem retorno adequado da interface.',
+      why_down: 'Melhorias nas mensagens de sistema, microinterações e indicadores de estado tornaram a interface mais comunicativa, previsível e orientada ao usuário.',
+      action:   'Revise todas as mensagens de erro e confirmação, adicione estados de carregamento visíveis, implemente microinterações nos pontos de ação e garanta feedback em processos longos.',
+    },
+    input_effort: {
+      why_up:   'Formulários podem ter ficado mais extensos ou complexos, com menor automação ou validação menos clara, aumentando o esforço e a carga cognitiva do usuário.',
+      why_down: 'Melhorias em autopreenchimento, validação em tempo real ou redução de campos obrigatórios diminuíram o esforço de entrada e aceleraram as tarefas.',
+      action:   'Reduza campos desnecessários, implemente autocomplete e sugestões contextuais, adicione validação inline em tempo real e aumente a tolerância a variações de formato.',
+    },
+    trust_transparency: {
+      why_up:   'O onboarding pode ter ficado confuso, ou permissões e políticas de privacidade estão sendo apresentadas sem contexto suficiente, gerando desconfiança.',
+      why_down: 'Melhorias no onboarding, na contextualização de permissões ou na clareza sobre uso de dados aumentaram a sensação de controle e confiança do usuário.',
+      action:   'Revise o fluxo de onboarding, solicite permissões somente quando necessário com explicação de uso, clarifique a política de privacidade com linguagem simples.',
+    },
+    accessibility: {
+      why_up:   'Possíveis problemas de contraste insuficiente, alvos de toque pequenos, falta de responsividade em certos dispositivos ou suporte inadequado a tecnologias assistivas.',
+      why_down: 'Ajustes de contraste, ampliação de alvos de toque, melhorias de responsividade ou avanços no suporte a acessibilidade tornaram o produto mais inclusivo.',
+      action:   'Audite com axe ou WAVE, corrija falhas de contraste (mínimo AA), aumente áreas de toque (≥44×44px), teste em diferentes tamanhos de tela e valide com leitores de tela.',
+    },
+  };
 
   // -----------------------------------------------------------------------
   // DOM refs
@@ -253,6 +376,8 @@
           <span style="color:#94A3B8">→</span> estável
         </div>
 
+        ${buildInsightsHtml(data)}
+
       </div>
     `;
 
@@ -263,6 +388,88 @@
     const d = document.createElement('div');
     d.textContent = str;
     return d.innerHTML;
+  }
+
+  // -----------------------------------------------------------------------
+  // Insights builder
+  // -----------------------------------------------------------------------
+  function buildInsightsHtml(data) {
+    const { cf_delta, cf_arrow, dimensions } = data;
+
+    const scoredDims = dimensions.filter(d => d.delta !== null);
+    const worsened   = scoredDims.filter(d => d.delta >  0.005).sort((a, b) => b.delta - a.delta);
+    const improved   = scoredDims.filter(d => d.delta < -0.005).sort((a, b) => a.delta - b.delta);
+
+    // Overall summary
+    let overallClass, overallIcon, overallHeadline, overallBody;
+    if (cf_arrow === '↓') {
+      overallClass    = 'insight-good';
+      overallIcon     = '✓';
+      overallHeadline = `A fricção geral diminuiu ${Math.abs(cf_delta).toFixed(2)} pontos — evolução positiva entre as avaliações.`;
+      overallBody     = improved.length > 0
+        ? `As dimensões com maior melhora foram: <strong>${improved.slice(0, 2).map(d => escHtml(d.name)).join(', ')}</strong>. As mudanças implementadas tiveram impacto direto na experiência do usuário.`
+        : 'A melhora foi distribuída de forma equilibrada entre as dimensões avaliadas.';
+    } else if (cf_arrow === '↑') {
+      overallClass    = 'insight-bad';
+      overallIcon     = '⚠';
+      overallHeadline = `A fricção geral aumentou ${cf_delta.toFixed(2)} pontos — a experiência piorou entre as avaliações.`;
+      overallBody     = worsened.length > 0
+        ? `As dimensões mais críticas são: <strong>${worsened.slice(0, 2).map(d => escHtml(d.name)).join(', ')}</strong>. Priorize a investigação e correção nessas áreas para reverter a regressão.`
+        : 'A piora foi distribuída entre as dimensões — revise as mudanças recentes em busca de regressões.';
+    } else {
+      overallClass    = 'insight-neutral';
+      overallIcon     = '→';
+      overallHeadline = 'A fricção geral permaneceu estável entre as duas avaliações.';
+      overallBody     = worsened.length > 0
+        ? `Algumas dimensões regrediram, mas foram compensadas por melhorias em outras. Atenção para: <strong>${worsened.slice(0, 2).map(d => escHtml(d.name)).join(', ')}</strong>.`
+        : improved.length > 0
+          ? `Há melhorias pontuais em <strong>${improved.slice(0, 2).map(d => escHtml(d.name)).join(', ')}</strong>, mas ainda há espaço para evolução nas demais dimensões.`
+          : 'Não houve variações significativas em nenhuma dimensão.';
+    }
+
+    // Dimension-level rows for worsened dimensions
+    let worsenedRows = worsened.map(dim => {
+      const ctx = DIM_CONTEXT[dim.id];
+      if (!ctx) return '';
+      return `
+        <div class="insight-dim-row insight-bad">
+          <div class="insight-dim-header">
+            <span class="insight-dim-name">${escHtml(dim.name)}</span>
+            <span class="insight-dim-delta" style="color:#EF4444">+${dim.delta.toFixed(2)} ↑</span>
+          </div>
+          <p class="insight-dim-why"><strong>Por que piorou:</strong> ${ctx.why_up}</p>
+          <p class="insight-dim-action"><strong>Ação recomendada:</strong> ${ctx.action}</p>
+        </div>`;
+    }).join('');
+
+    // Dimension-level rows for improved dimensions
+    let improvedRows = improved.map(dim => {
+      const ctx = DIM_CONTEXT[dim.id];
+      if (!ctx) return '';
+      return `
+        <div class="insight-dim-row insight-good">
+          <div class="insight-dim-header">
+            <span class="insight-dim-name">${escHtml(dim.name)}</span>
+            <span class="insight-dim-delta" style="color:#10B981">${dim.delta.toFixed(2)} ↓</span>
+          </div>
+          <p class="insight-dim-why"><strong>Por que melhorou:</strong> ${ctx.why_down}</p>
+        </div>`;
+    }).join('');
+
+    const hasDimRows = worsenedRows || improvedRows;
+
+    return `
+      <div class="compare-insights">
+        <div class="insights-title">Análise &amp; Recomendações</div>
+        <div class="insight-summary ${overallClass}">
+          <span class="insight-summary-icon">${overallIcon}</span>
+          <div>
+            <div class="insight-summary-headline">${overallHeadline}</div>
+            <div class="insight-summary-body">${overallBody}</div>
+          </div>
+        </div>
+        ${hasDimRows ? `<div class="insights-dim-list">${worsenedRows}${improvedRows}</div>` : ''}
+      </div>`;
   }
 
 }());
